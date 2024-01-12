@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "aim_ratio_collections"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "osu-db",
+ "rosu-pp",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -296,15 +305,6 @@ name = "rosu-pp"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40f365961f000e9506345a6c57071c23ff983587f24187c0d624bf56a66c1e91"
-
-[[package]]
-name = "sr_collections"
-version = "0.1.0"
-dependencies = [
- "clap",
- "osu-db",
- "rosu-pp",
-]
 
 [[package]]
 name = "strsim"
