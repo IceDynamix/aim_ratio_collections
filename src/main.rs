@@ -5,6 +5,7 @@ use osu_db::{CollectionList, Listing, Mode};
 use rosu_pp::{BeatmapExt, PerformanceAttributes};
 use std::collections::HashMap;
 use std::path::Path;
+use std::time::Instant;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -45,8 +46,9 @@ fn main() {
     }
 
     println!("Reading osu!.db");
-
     let listing = Listing::from_file(&db_path).expect("Could not read osu!.db");
+    println!("Finished reading osu!.db");
+
     let aim_ratio_groups = group_maps_by(&args, listing);
 
     println!("Reading collection.db");
@@ -71,16 +73,18 @@ fn group_maps_by(args: &Args, listing: Listing) -> HashMap<i32, Vec<Option<Strin
                     .std_ratings
                     .iter()
                     .find_map(|(mods, stars)| if mods.0 == 0 { Some(stars) } else { None })
-                    .unwrap_or(&args.min_star_rating)
+                    .unwrap_or(&args.min_star_rating) // When star rating calcs haven't run yet, the star rating will not be set.
                     >= &args.min_star_rating
         })
         .collect();
 
     println!(
-        "Starting processing on {} out of {} total maps...",
+        "Found {} out of {} total maps to process",
         filtered_maps.len(),
         listing.beatmaps.len()
     );
+
+    let now = Instant::now();
 
     let mut count = 0;
 
@@ -92,10 +96,14 @@ fn group_maps_by(args: &Args, listing: Listing) -> HashMap<i32, Vec<Option<Strin
                 .join(map.folder_name.as_ref().unwrap())
                 .join(map.file_name.as_ref().unwrap());
 
-            let map_pp = match rosu_pp::Beatmap::from_path(map_path) {
+            let map_pp = match rosu_pp::Beatmap::from_path(&map_path) {
                 Ok(map) => map,
                 Err(why) => {
-                    println!("Error while parsing map: {}", why);
+                    println!(
+                        "Error while parsing {}: {}",
+                        map_path.to_str().unwrap_or_default(),
+                        why
+                    );
                     return hash_map;
                 }
             };
@@ -114,7 +122,12 @@ fn group_maps_by(args: &Args, listing: Listing) -> HashMap<i32, Vec<Option<Strin
             count += 1;
 
             if count % 100 == 0 {
-                println!("Processed {}/{} maps", count, filtered_maps.len());
+                println!(
+                    "Processed {}/{} maps in {:.1} seconds",
+                    count,
+                    filtered_maps.len(),
+                    now.elapsed().as_secs_f32()
+                );
             }
 
             hash_map
