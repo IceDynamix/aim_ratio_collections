@@ -19,7 +19,7 @@ struct Args {
     /// The prefix to add to each collection
     collection_prefix: String,
 
-    #[arg(long, default_value = "5.0")]
+    #[arg(long, default_value = "10.0")]
     /// The multiples of which the aim ratio is grouped by (eg. precision 5 => groups of 50%, 55%, 60%...)
     ratio_precision: f64,
 
@@ -70,11 +70,11 @@ fn group_maps_by(args: &Args, listing: Listing) -> HashMap<i32, Vec<Option<Strin
         .filter(|map| {
             map.mode == Mode::Standard
                 && map
-                    .std_ratings
-                    .iter()
-                    .find_map(|(mods, stars)| if mods.0 == 0 { Some(stars) } else { None })
-                    .unwrap_or(&args.min_star_rating) // When star rating calcs haven't run yet, the star rating will not be set.
-                    >= &args.min_star_rating
+                .std_ratings
+                .iter()
+                .find_map(|(mods, stars)| if mods.0 == 0 { Some(stars) } else { None })
+                .unwrap_or(&args.min_star_rating) // When star rating calcs haven't run yet, the star rating will not be set.
+                >= &args.min_star_rating
         })
         .collect();
 
@@ -113,10 +113,12 @@ fn group_maps_by(args: &Args, listing: Listing) -> HashMap<i32, Vec<Option<Strin
                 let rounded_aim_aspect = ((aim_aspect * 100f64 / args.ratio_precision).floor()
                     * args.ratio_precision) as i32;
 
-                hash_map
-                    .entry(rounded_aim_aspect)
-                    .or_default()
-                    .push(map.hash.clone());
+                Vec::push(
+                    hash_map
+                        .entry(rounded_aim_aspect)
+                        .or_default(),
+                    map.hash.clone(),
+                );
             }
 
             count += 1;

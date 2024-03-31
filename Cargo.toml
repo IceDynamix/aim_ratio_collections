@@ -2,6 +2,8 @@
 name = "aim_ratio_collections"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/IceDynamix/aim_ratio_collections"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
